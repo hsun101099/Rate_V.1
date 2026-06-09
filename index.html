@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>換匯助手</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1A5CFF;--blue-l:#EEF3FF;--blue-d:#0D3DB3;
+  --green:#00C27C;--green-l:#E6FAF3;
+  --orange:#FF6B35;--orange-l:#FFF1EB;
+  --red:#EF4444;--red-l:#FEF2F2;
+  --dark:#0F1923;--mid:#526070;--light:#8899A9;
+  --bg:#F7F9FC;--white:#fff;--border:#DDE3EA;
+  --rs:10px;--rm:16px;--rl:22px;
+  --ss:0 2px 10px rgba(15,25,35,.07);
+  --sm:0 6px 24px rgba(15,25,35,.11);
+}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh}
+
+/* ── STEP BAR ── */
+.steps-bar{background:var(--white);border-bottom:1px solid var(--border);padding:14px 20px;position:sticky;top:0;z-index:100}
+.steps-inner{max-width:560px;margin:0 auto;display:flex;align-items:center}
+.step-item{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.sc{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;font-weight:900;flex-shrink:0;transition:.3s}
+.sc.done{background:var(--green);color:#fff}
+.sc.active{background:var(--blue);color:#fff;box-shadow:0 0 0 4px var(--blue-l)}
+.sc.idle{background:var(--border);color:var(--light)}
+.sl{font-size:.78rem;font-weight:600;color:var(--mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sl.active{color:var(--blue)}.sl.done{color:var(--green)}
+.sline{flex:1;height:2px;background:var(--border);margin:0 6px;transition:.3s;flex-shrink:0}
+.sline.done{background:var(--green)}
+
+/* ── STATUS BADGE ── */
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:.82rem;font-weight:700}
+.sb-open{background:var(--green-l);color:var(--green)}
+.sb-closed{background:var(--red-l);color:var(--red)}
+.sb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sb-open .sb-dot{background:var(--green);animation:pulse 2s infinite}
+.sb-closed .sb-dot{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── PAGES ── */
+.page{display:none;min-height:calc(100vh - 57px)}
+.page.active{display:block}
+
+/* ══════════════ STEP 1 ══════════════ */
+.s1-wrap{max-width:480px;margin:0 auto;padding:28px 20px 40px}
+
+/* 銀行營業狀態 */
+.bank-status-bar{display:flex;align-items:center;justify-content:space-between;background:var(--white);border-radius:var(--rm);border:1px solid var(--border);padding:14px 18px;margin-bottom:20px}
+.bsb-left{}
+.bsb-time{font-size:.75rem;color:var(--mid);margin-top:3px}
+.bsb-note{font-size:.7rem;color:var(--light);margin-top:2px}
+
+/* 金額卡 */
+.amount-card{background:var(--white);border-radius:var(--rl);border:1px solid var(--border);padding:22px;margin-bottom:14px;box-shadow:var(--ss)}
+.ac-label{font-size:.7rem;font-weight:700;color:var(--mid);letter-spacing:.06em;margin-bottom:10px}
+.amt-row{display:flex;align-items:center;gap:10px}
+.amt-input{flex:1;font-size:2rem;font-weight:900;color:var(--dark);border:none;outline:none;background:transparent;font-family:inherit;min-width:0;width:100%}
+.amt-input::placeholder{color:var(--border)}
+.cur-badge{display:flex;align-items:center;gap:7px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rm);padding:9px 13px;cursor:pointer;transition:.15s;flex-shrink:0;font-family:inherit}
+.cur-badge:hover,.cur-badge.open{border-color:var(--blue);background:var(--blue-l)}
+.cb-flag{font-size:1.35rem;line-height:1}
+.cb-code{font-size:.92rem;font-weight:700}
+.cb-arrow{font-size:.65rem;color:var(--light);transition:.2s}
+.cur-badge.open .cb-arrow{transform:rotate(180deg)}
+
+/* picker */
+.cur-picker{display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
+.cur-picker.open{display:block}
+.cp-label{font-size:.7rem;font-weight:700;color:var(--mid);margin-bottom:8px}
+.cp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.cpi{display:flex;align-items:center;gap:7px;padding:10px 11px;border-radius:var(--rm);border:1.5px solid var(--border);cursor:pointer;background:var(--white);transition:.15s;font-family:inherit}
+.cpi:hover{border-color:var(--blue);background:var(--blue-l)}
+.cpi.sel{border-color:var(--blue);background:var(--blue-l)}
+.cpi-flag{font-size:1.1rem;line-height:1}
+.cpi-code{font-size:.8rem;font-weight:700;display:block}
+.cpi-name{font-size:.65rem;color:var(--mid);display:block}
+
+/* 換成 */
+.to-card{background:var(--white);border-radius:var(--rl);border:1px solid var(--border);padding:18px 22px;margin-bottom:14px;box-shadow:var(--ss)}
+.to-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.toi{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border-radius:var(--rm);border:1.5px solid var(--border);cursor:pointer;background:var(--white);transition:.15s;font-family:inherit}
+.toi:hover{border-color:var(--blue);background:var(--blue-l)}
+.toi.sel{border-color:var(--blue);background:var(--blue-l)}
+.toi-flag{font-size:1.4rem;line-height:1}
+.toi-code{font-size:.8rem;font-weight:700}
+.toi-name{font-size:.63rem;color:var(--mid)}
+
+/* 位置卡 */
+.loc-card{background:var(--white);border-radius:var(--rl);border:1px solid var(--border);padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.15s;box-shadow:var(--ss)}
+.loc-card:hover{border-color:var(--blue)}
+.loc-card.ok{border-color:var(--green);background:var(--green-l)}
+.loc-icon{width:42px;height:42px;border-radius:11px;background:var(--blue-l);display:grid;place-items:center;font-size:1.25rem;flex-shrink:0}
+.loc-card.ok .loc-icon{background:var(--green-l)}
+.loc-main{font-size:.88rem;font-weight:700}
+.loc-sub{font-size:.73rem;color:var(--mid);margin-top:2px}
+
+/* 搜尋鈕 */
+.go-btn{width:100%;padding:15px;background:var(--blue);color:#fff;border:none;border-radius:var(--rl);font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(26,92,255,.28)}
+.go-btn:hover{background:var(--blue-d)}
+.go-btn:active{transform:scale(.99)}
+.go-btn:disabled{background:var(--border);color:var(--light);box-shadow:none;cursor:not-allowed}
+
+/* ══════════════ STEP 2 ══════════════ */
+.s2-wrap{max-width:620px;margin:0 auto;padding:20px 20px 40px}
+
+/* 摘要 */
+.summary-bar{background:var(--white);border-radius:var(--rl);border:1px solid var(--border);padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sb-amt{font-size:1.15rem;font-weight:900}
+.sb-info{font-size:.75rem;color:var(--mid);margin-top:3px}
+.edit-btn{background:none;border:1.5px solid var(--border);border-radius:var(--rs);padding:7px 13px;font-size:.78rem;color:var(--mid);cursor:pointer;font-family:inherit;white-space:nowrap;transition:.15s;flex-shrink:0}
+.edit-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* 地圖區 */
+.map-section{background:var(--white);border-radius:var(--rl);border:1px solid var(--border);overflow:hidden;margin-bottom:18px;box-shadow:var(--ss)}
+.map-area{position:relative;height:260px;background:linear-gradient(135deg,#dbeafe 0%,#e0f2fe 50%,#dcfce7 100%)}
+.map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(148,163,184,.25) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.25) 1px,transparent 1px);background-size:32px 32px}
+.road-h{position:absolute;left:0;right:0;background:#cbd5e1;opacity:.7}
+.road-v{position:absolute;top:0;bottom:0;background:#cbd5e1;opacity:.7}
+/* distance rings */
+.ring{position:absolute;border-radius:50%;border:2px dashed;transform:translate(-50%,-50%);pointer-events:none}
+.ring-1km{border-color:rgba(26,92,255,.25)}
+.ring-2km{border-color:rgba(26,92,255,.15)}
+/* user pin */
+.user-pin{position:absolute;transform:translate(-50%,-50%);z-index:10}
+.up-dot{width:16px;height:16px;background:var(--blue);border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 8px rgba(26,92,255,.18)}
+/* bank pins */
+.bank-pin{position:absolute;transform:translate(-50%,-100%);cursor:pointer;z-index:5;transition:.15s}
+.bank-pin:hover{z-index:20}
+.bp-bubble{padding:5px 9px;border-radius:7px;font-size:.7rem;font-weight:700;color:#fff;white-space:nowrap;box-shadow:var(--sm);position:relative;line-height:1.3}
+.bp-bubble::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);border:5px solid transparent;border-bottom:none}
+.bp-rank1{background:var(--orange)}.bp-rank1::after{border-top-color:var(--orange)}
+.bp-rank2{background:var(--blue)}.bp-rank2::after{border-top-color:var(--blue)}
+.bp-rank3{background:#6B7280}.bp-rank3::after{border-top-color:#6B7280}
+.bp-closed{background:#9CA3AF;opacity:.75}.bp-closed::after{border-top-color:#9CA3AF}
+/* map legend */
+.map-legend{padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--mid)}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+/* 結果卡 */
+.rcard{background:var(--white);border-radius:var(--rl);border:1.5px solid var(--border);padding:18px;margin-bottom:10px;transition:.18s;position:relative;overflow:hidden;box-shadow:var(--ss)}
+.rcard:hover{box-shadow:var(--sm);transform:translateY(-1px)}
+.rcard.r1{border-color:var(--orange)}
+.rank-tag{position:absolute;top:0;left:0;padding:4px 13px 4px 15px;font-size:.68rem;font-weight:900;border-radius:0 0 var(--rm) 0}
+.r1 .rank-tag{background:linear-gradient(90deg,#FF6B35,#FF9500);color:#fff}
+.r2 .rank-tag{background:var(--bg);color:var(--mid);border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.r3 .rank-tag,.r4 .rank-tag,.r5 .rank-tag{background:var(--bg);color:var(--light);border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.rc-top{display:flex;align-items:flex-start;gap:11px;margin-top:20px;margin-bottom:12px}
+.bavatar{width:42px;height:42px;border-radius:10px;background:var(--bg);border:1px solid var(--border);display:grid;place-items:center;font-size:1.2rem;flex-shrink:0}
+.binfo{flex:1;min-width:0}
+.bname{font-size:.9rem;font-weight:700}
+.bstatus-row{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap}
+.open-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
+.closed-dot{width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0}
+.bstatus-txt{font-size:.75rem;font-weight:600}
+.bdist{font-size:.72rem;color:var(--mid)}
+.bright{text-align:right;flex-shrink:0}
+.b-get{font-size:1.3rem;font-weight:900;color:var(--green);line-height:1}
+.b-unit{font-size:.7rem;color:var(--mid);margin-top:2px}
+.b-diff{font-size:.68rem;font-weight:600;margin-top:2px}
+.b-diff.less{color:var(--red)}
+.rc-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--bg);border-radius:var(--rm);padding:10px;margin-bottom:12px}
+.nl{font-size:.66rem;color:var(--light);margin-bottom:2px}
+.nv{font-size:.83rem;font-weight:700}
+.nv.g{color:var(--green)}.nv.o{color:var(--orange)}
+.cp-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.cp-lbl{font-size:.7rem;color:var(--mid);white-space:nowrap}
+.cp-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.cp-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--green))}
+.cp-num{font-size:.8rem;font-weight:900;color:var(--blue);white-space:nowrap}
+.rc-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-nav{padding:11px;background:var(--blue);color:#fff;border:none;border-radius:var(--rm);font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s}
+.btn-nav:hover{background:var(--blue-d)}
+.btn-call{padding:11px;background:var(--white);color:var(--dark);border:1.5px solid var(--border);border-radius:var(--rm);font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s}
+.btn-call:hover{border-color:var(--blue);color:var(--blue)}
+.closed-overlay{position:absolute;inset:0;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;color:var(--red);backdrop-filter:blur(1px);border-radius:var(--rl);pointer-events:none}
+
+/* tip */
+.tip-box{background:linear-gradient(135deg,#1A5CFF,#0094FF);border-radius:var(--rm);padding:14px 18px;margin-top:4px}
+.tip-box p{font-size:.82rem;color:#fff;line-height:1.65;opacity:.95}
+
+/* ── LOADING ── */
+.loading{display:none;position:fixed;inset:0;background:rgba(255,255,255,.96);z-index:500;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.loading.show{display:flex}
+.spinner{width:44px;height:44px;border:4px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ls{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.li{font-size:.8rem;color:var(--light);display:flex;align-items:center;gap:8px;transition:.3s}
+.li.done{color:var(--green)}.li.cur{color:var(--blue);font-weight:600}
+.li-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0}
+.li.done .li-dot{background:var(--green)}.li.cur .li-dot{background:var(--blue)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:#fff;padding:10px 18px;border-radius:var(--rs);font-size:.82rem;font-weight:500;z-index:999;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;box-shadow:var(--sm)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ── RESPONSIVE ── */
+@media(max-width:599px){
+  .s1-wrap,.s2-wrap{padding:16px 14px 36px}
+  .cp-grid{grid-template-columns:repeat(2,1fr)}
+  .amt-input{font-size:1.6rem}
+  .rc-btns{grid-template-columns:1fr 1fr}
+  .map-area{height:220px}
+  .sl{display:none}
+}
+@media(max-width:380px){
+  .to-grid{grid-template-columns:repeat(2,1fr)}
+  .rc-nums{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- STEP BAR -->
+<div class="steps-bar">
+  <div class="steps-inner">
+    <div class="step-item">
+      <div class="sc active" id="sc1">1</div>
+      <span class="sl active" id="sl1">輸入金額</span>
+    </div>
+    <div class="sline" id="sline1"></div>
+    <div class="step-item">
+      <div class="sc idle" id="sc2">2</div>
+      <span class="sl" id="sl2">選擇幣別</span>
+    </div>
+    <div class="sline" id="sline2"></div>
+    <div class="step-item">
+      <div class="sc idle" id="sc3">3</div>
+      <span class="sl" id="sl3">前往換匯</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STEP 1 ═══ -->
+<div id="page-s1" class="page active">
+  <div class="s1-wrap">
+
+    <!-- 銀行營業狀態 -->
+    <div class="bank-status-bar">
+      <div class="bsb-left">
+        <div id="bankStatusBadge"></div>
+        <div class="bsb-time" id="bankStatusTime"></div>
+        <div class="bsb-note">一般銀行營業時間 09:00–15:30（週一至週五）</div>
+      </div>
+      <div style="font-size:1.5rem" id="bankStatusIcon"></div>
+    </div>
+
+    <!-- 金額 + 幣別 -->
+    <div class="amount-card">
+      <div class="ac-label">我手上有</div>
+      <div class="amt-row">
+        <input class="amt-input" id="amtIn" type="number" placeholder="0" inputmode="decimal" min="0">
+        <button class="cur-badge" id="fromBadge" onclick="togglePicker()">
+          <span class="cb-flag" id="fromFlag">🇺🇸</span>
+          <span class="cb-code" id="fromCode">USD</span>
+          <span class="cb-arrow" id="fromArrow">▾</span>
+        </button>
+      </div>
+      <div class="cur-picker" id="fromPicker">
+        <div class="cp-label">選擇幣別</div>
+        <div class="cp-grid" id="fromGrid"></div>
+      </div>
+    </div>
+
+    <!-- 換成 -->
+    <div class="to-card">
+      <div class="ac-label" style="margin-bottom:10px">我想換成</div>
+      <div class="to-grid" id="toGrid"></div>
+    </div>
+
+    <!-- 位置 -->
+    <div class="loc-card" id="locCard" onclick="getLocation()">
+      <div class="loc-icon" id="locIcon">📍</div>
+      <div>
+        <div class="loc-main" id="locMain">取得我的位置</div>
+        <div class="loc-sub" id="locSub">點此允許定位，搜尋附近換匯地點</div>
+      </div>
+    </div>
+
+    <button class="go-btn" id="goBtn" onclick="doSearch()" disabled>
+      🔍 搜尋附近最划算換匯地點
+    </button>
+  </div>
+</div>
+
+<!-- ═══ STEP 2 ═══ -->
+<div id="page-s2" class="page">
+  <div class="s2-wrap">
+
+    <!-- 摘要列 -->
+    <div class="summary-bar">
+      <div>
+        <div class="sb-amt" id="sumAmt"></div>
+        <div class="sb-info" id="sumInfo"></div>
+      </div>
+      <button class="edit-btn" onclick="goBack()">← 修改</button>
+    </div>
+
+    <!-- 地圖 -->
+    <div class="map-section">
+      <div class="map-area" id="mapArea">
+        <div class="map-grid"></div>
+        <!-- 道路 -->
+        <div class="road-h" style="top:38%;height:10px"></div>
+        <div class="road-h" style="top:65%;height:8px"></div>
+        <div class="road-v" style="left:42%;width:9px"></div>
+        <div class="road-v" style="left:72%;width:8px"></div>
+        <!-- 距離圈 (以地圖中心為基準) -->
+        <div class="ring ring-1km" id="ring1km" style="left:50%;top:50%"></div>
+        <div class="ring ring-2km" id="ring2km" style="left:50%;top:50%"></div>
+        <!-- 使用者位置 -->
+        <div class="user-pin" style="left:50%;top:50%"><div class="up-dot"></div></div>
+        <!-- Bank pins injected by JS -->
+        <div id="mapPins"></div>
+      </div>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>CP值最高</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>第2–3名</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9CA3AF"></div>其他/關閉</div>
+        <div style="margin-left:auto;font-size:.68rem;color:var(--light)" id="mapUpdateTime"></div>
+      </div>
+    </div>
+
+    <!-- 結果列表 -->
+    <div id="resultsList"></div>
+
+    <!-- AI tip -->
+    <div class="tip-box"><p id="tipText"></p></div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <div style="font-size:.9rem;color:var(--mid);font-weight:500">正在幫你找最划算的地點…</div>
+  <div class="ls">
+    <div class="li cur" id="li1"><div class="li-dot"></div>取得你的位置</div>
+    <div class="li" id="li2"><div class="li-dot"></div>搜尋附近換匯地點</div>
+    <div class="li" id="li3"><div class="li-dot"></div>載入各銀行匯率</div>
+    <div class="li" id="li4"><div class="li-dot"></div>計算 CP 值排序</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  幣別定義
+// ══════════════════════════════════════════
+const CURRENCIES = [
+  {code:'USD',flag:'🇺🇸',name:'美元'},
+  {code:'JPY',flag:'🇯🇵',name:'日圓'},
+  {code:'EUR',flag:'🇪🇺',name:'歐元'},
+  {code:'KRW',flag:'🇰🇷',name:'韓圜'},
+  {code:'HKD',flag:'🇭🇰',name:'港幣'},
+  {code:'GBP',flag:'🇬🇧',name:'英鎊'},
+  {code:'CNY',flag:'🇨🇳',name:'人民幣'},
+  {code:'AUD',flag:'🇦🇺',name:'澳幣'},
+  {code:'SGD',flag:'🇸🇬',name:'新幣'},
+  {code:'TWD',flag:'🇹🇼',name:'台幣'},
+];
+
+// ══════════════════════════════════════════
+//  真實匯率資料 (來源：優率網 / 台灣銀行 2026-06-09)
+//  格式：{ 現鈔買入, 現鈔賣出 }  (外幣↔TWD)
+//  現鈔買入 = 你把外幣賣給銀行，銀行給你多少 TWD
+//  現鈔賣出 = 你把 TWD 給銀行，銀行給你多少外幣的價格(用TWD計)
+// ══════════════════════════════════════════
+const RATES = {
+  '台灣銀行': {
+    USD:{buy:31.180,sell:31.850}, JPY:{buy:0.18800,sell:0.20080},
+    EUR:{buy:35.630,sell:36.970}, HKD:{buy:3.8740,sell:4.0780},
+    GBP:{buy:40.930,sell:43.050}, AUD:{buy:21.850,sell:22.630},
+    CNY:{buy:4.5600,sell:4.7220}, SGD:{buy:23.940,sell:24.850},
+    KRW:{buy:0.01894,sell:0.02284},
+  },
+  '第一銀行': {
+    USD:{buy:31.363,sell:31.878}, JPY:{buy:0.19370,sell:0.20110},
+    EUR:{buy:35.986,sell:36.992}, HKD:{buy:3.9870,sell:4.0830},
+    GBP:{buy:41.473,sell:43.073}, AUD:{buy:21.980,sell:22.610},
+    CNY:{buy:4.6130,sell:4.7230}, SGD:{buy:24.472,sell:24.672},
+    KRW:{buy:0.0,sell:0.0},
+  },
+  '玉山銀行': {
+    USD:{buy:31.320,sell:31.870}, JPY:{buy:0.19460,sell:0.20160},
+    EUR:{buy:36.000,sell:37.000}, HKD:{buy:3.9330,sell:4.0930},
+    GBP:{buy:41.720,sell:42.720}, AUD:{buy:0.0,sell:0.0},
+    CNY:{buy:4.5950,sell:4.7550}, SGD:{buy:0.0,sell:0.0},
+    KRW:{buy:0.0,sell:0.0},
+  },
+  '合作金庫': {
+    USD:{buy:31.245,sell:31.943}, JPY:{buy:0.18770,sell:0.20230},
+    EUR:{buy:35.770,sell:37.235}, HKD:{buy:3.8875,sell:4.0930},
+    GBP:{buy:0.0,sell:0.0},      AUD:{buy:0.0,sell:0.0},
+    CNY:{buy:4.5280,sell:4.7510}, SGD:{buy:0.0,sell:0.0},
+    KRW:{buy:0.0,sell:0.0},
+  },
+  '土地銀行': {
+    USD:{buy:31.194,sell:31.904}, JPY:{buy:0.18980,sell:0.20150},
+    EUR:{buy:35.900,sell:36.950}, HKD:{buy:3.8790,sell:4.0830},
+    GBP:{buy:0.0,sell:0.0},      AUD:{buy:21.970,sell:22.670},
+    CNY:{buy:4.5660,sell:4.7310}, SGD:{buy:0.0,sell:0.0},
+    KRW:{buy:0.0,sell:0.0},
+  },
+  '國泰世華': {
+    USD:{buy:31.120,sell:31.740}, JPY:{buy:0.19020,sell:0.20120},
+    EUR:{buy:35.880,sell:37.160}, HKD:{buy:3.8990,sell:4.0890},
+    GBP:{buy:0.0,sell:0.0},      AUD:{buy:0.0,sell:0.0},
+    CNY:{buy:4.5080,sell:4.7030}, SGD:{buy:0.0,sell:0.0},
+    KRW:{buy:0.0,sell:0.0},
+  },
+  '兆豐銀行': {
+    USD:{buy:31.070,sell:31.740}, JPY:{buy:0.18760,sell:0.20030},
+    EUR:{buy:35.730,sell:37.070}, HKD:{buy:3.8570,sell:4.0630},
+    GBP:{buy:41.020,sell:43.160}, AUD:{buy:22.030,sell:22.820},
+    CNY:{buy:4.5470,sell:4.7090}, SGD:{buy:23.920,sell:24.810},
+    KRW:{buy:0.0,sell:0.0},
+  },
+};
+
+// ══════════════════════════════════════════
+//  銀行資料（淡水區模擬位置，等 Google Maps API 後換真實座標）
+//  pos: {x:0~100%, y:0~100%} 相對地圖位置
+// ══════════════════════════════════════════
+const BANKS = [
+  {id:'bot',    name:'台灣銀行',  branch:'淡水分行',  icon:'🏦', dist:350,  walkMin:5,  fee:0,   phone:'02-2621-2345', stars:4.9, reviews:128, pos:{x:42,y:35}},
+  {id:'first',  name:'第一銀行',  branch:'淡水分行',  icon:'🏦', dist:520,  walkMin:7,  fee:0,   phone:'02-2623-3456', stars:4.7, reviews:89,  pos:{x:68,y:30}},
+  {id:'esun',   name:'玉山銀行',  branch:'淡水分行',  icon:'🏛️', dist:700,  walkMin:9,  fee:100, phone:'02-2621-5678', stars:4.6, reviews:74,  pos:{x:56,y:58}},
+  {id:'tcb',    name:'合作金庫',  branch:'淡水分行',  icon:'🏛️', dist:850,  walkMin:11, fee:0,   phone:'02-2621-9012', stars:4.5, reviews:62,  pos:{x:30,y:62}},
+  {id:'land',   name:'土地銀行',  branch:'淡水分行',  icon:'🏛️', dist:950,  walkMin:12, fee:0,   phone:'02-2622-1234', stars:4.6, reviews:55,  pos:{x:74,y:55}},
+  {id:'cathay', name:'國泰世華',  branch:'淡水分行',  icon:'🏛️', dist:1200, walkMin:15, fee:0,   phone:'02-2623-5678', stars:4.5, reviews:48,  pos:{x:25,y:40}},
+  {id:'mega',   name:'兆豐銀行',  branch:'淡水分行',  icon:'🏛️', dist:2200, walkMin:28, fee:200, phone:'02-2622-9999', stars:4.4, reviews:41,  pos:{x:80,y:75}},
+];
+
+// ══════════════════════════════════════════
+//  營業時間判斷（中原標準時間 UTC+8）
+// ══════════════════════════════════════════
+function getBankStatus() {
+  const now = new Date();
+  // 轉換為 UTC+8
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const tst = new Date(utc + 8 * 3600000);
+  const day  = tst.getDay();   // 0=日, 1=一 … 6=六
+  const hour = tst.getHours();
+  const min  = tst.getMinutes();
+  const sec  = tst.getSeconds();
+  const totalMin = hour * 60 + min;
+  const openMin  = 9  * 60;      // 09:00
+  const closeMin = 15 * 60 + 30; // 15:30
+  const isWeekday = day >= 1 && day <= 5;
+  const isOpen = isWeekday && totalMin >= openMin && totalMin < closeMin;
+  const pad = n => String(n).padStart(2,'0');
+  const timeStr = `${pad(hour)}:${pad(min)}:${pad(sec)}`;
+  const dayNames = ['日','一','二','三','四','五','六'];
+  return { isOpen, timeStr, day: dayNames[day], isWeekday };
+}
+
+function updateClock() {
+  const s = getBankStatus();
+  const badge = document.getElementById('bankStatusBadge');
+  const timeEl = document.getElementById('bankStatusTime');
+  const iconEl = document.getElementById('bankStatusIcon');
+  if (!badge) return;
+  if (s.isOpen) {
+    badge.innerHTML = `<div class="status-badge sb-open"><div class="sb-dot"></div>銀行營業中</div>`;
+    iconEl.textContent = '🏦';
+  } else {
+    let note = '';
+    if (!s.isWeekday) note = '（今日週'+s.day+'，假日公休）';
+    else if (parseInt(s.timeStr) < 9) note = '（尚未開始營業）';
+    else note = '（今日已結束營業）';
+    badge.innerHTML = `<div class="status-badge sb-closed"><div class="sb-dot"></div>今日已關閉 ${note}</div>`;
+    iconEl.textContent = '🔒';
+  }
+  timeEl.textContent = `現在時間（台灣）：${s.timeStr}　週${s.day}`;
+}
+
+// 每秒更新時鐘
+setInterval(updateClock, 1000);
+
+// ══════════════════════════════════════════
+//  狀態
+// ══════════════════════════════════════════
+let fromC = 'USD', toC = 'TWD';
+let hasLoc = false;
+let userLat = 25.1699, userLng = 121.4416;
+
+// ══════════════════════════════════════════
+//  初始化
+// ══════════════════════════════════════════
+function init() {
+  updateClock();
+  buildFromGrid();
+  buildToGrid();
+  document.getElementById('amtIn').addEventListener('input', checkReady);
+}
+
+function buildFromGrid() {
+  const g = document.getElementById('fromGrid');
+  g.innerHTML = '';
+  CURRENCIES.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'cpi' + (c.code===fromC?' sel':'');
+    b.innerHTML = `<span class="cpi-flag">${c.flag}</span><span><span class="cpi-code">${c.code}</span><span class="cpi-name">${c.name}</span></span>`;
+    b.onclick = () => selectFrom(c.code);
+    g.appendChild(b);
+  });
+}
+
+function buildToGrid() {
+  const g = document.getElementById('toGrid');
+  g.innerHTML = '';
+  // 排除來源幣別，TWD 優先
+  const list = [
+    ...CURRENCIES.filter(c=>c.code==='TWD'&&c.code!==fromC),
+    ...CURRENCIES.filter(c=>c.code!=='TWD'&&c.code!==fromC),
+  ];
+  list.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'toi' + (c.code===toC?' sel':'');
+    b.innerHTML = `<span class="toi-flag">${c.flag}</span><span class="toi-code">${c.code}</span><span class="toi-name">${c.name}</span>`;
+    b.onclick = () => selectTo(c.code);
+    g.appendChild(b);
+  });
+}
+
+function selectFrom(code) {
+  fromC = code;
+  const c = CURRENCIES.find(x=>x.code===code);
+  document.getElementById('fromFlag').textContent = c.flag;
+  document.getElementById('fromCode').textContent = c.code;
+  if (toC === code) toC = code==='TWD'?'JPY':'TWD';
+  closePicker();
+  buildFromGrid();
+  buildToGrid();
+  checkReady();
+}
+
+function selectTo(code) {
+  toC = code;
+  buildToGrid();
+  checkReady();
+}
+
+function togglePicker() {
+  const p = document.getElementById('fromPicker');
+  const b = document.getElementById('fromBadge');
+  const isOpen = p.classList.toggle('open');
+  b.classList.toggle('open', isOpen);
+}
+function closePicker() {
+  document.getElementById('fromPicker').classList.remove('open');
+  document.getElementById('fromBadge').classList.remove('open');
+}
+
+// ══════════════════════════════════════════
+//  定位
+// ══════════════════════════════════════════
+function getLocation() {
+  if (hasLoc) return;
+  document.getElementById('locMain').textContent = '定位中…';
+  document.getElementById('locSub').textContent = '請允許瀏覽器存取位置';
+  document.getElementById('locIcon').textContent = '⏳';
+  if (!navigator.geolocation) { useDefault(); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => { userLat=pos.coords.latitude; userLng=pos.coords.longitude; locOK(); },
+    () => useDefault(),
+    {timeout:8000}
+  );
+}
+function locOK() {
+  hasLoc = true;
+  document.getElementById('locCard').classList.add('ok');
+  document.getElementById('locIcon').textContent = '✅';
+  document.getElementById('locMain').textContent = '位置已取得';
+  document.getElementById('locSub').textContent = `${userLat.toFixed(4)}, ${userLng.toFixed(4)}`;
+  checkReady();
+}
+function useDefault() {
+  hasLoc = true;
+  document.getElementById('locCard').classList.add('ok');
+  document.getElementById('locIcon').textContent = '📍';
+  document.getElementById('locMain').textContent = '使用預設位置（淡水區）';
+  document.getElementById('locSub').textContent = '無法取得 GPS，以淡水為基準';
+  checkReady();
+}
+
+function checkReady() {
+  const amt = parseFloat(document.getElementById('amtIn').value)||0;
+  document.getElementById('goBtn').disabled = !(amt>0 && hasLoc);
+}
+
+// ══════════════════════════════════════════
+//  執行搜尋
+// ══════════════════════════════════════════
+function doSearch() {
+  const ld = document.getElementById('loading');
+  ld.classList.add('show');
+  const ids = ['li1','li2','li3','li4'];
+  let i = 0;
+  const tick = setInterval(()=>{
+    if(i>0){document.getElementById(ids[i-1]).classList.remove('cur');document.getElementById(ids[i-1]).classList.add('done')}
+    if(i<ids.length){document.getElementById(ids[i]).classList.add('cur');i++}
+    else{clearInterval(tick);setTimeout(()=>{ld.classList.remove('show');showResults()},350)}
+  },550);
+}
+
+// ══════════════════════════════════════════
+//  計算 & 顯示結果
+// ══════════════════════════════════════════
+function calcGot(bank, fromCur, toCur, amountFrom) {
+  // 先把 fromCur → TWD
+  let amtTWD;
+  if (fromCur === 'TWD') {
+    amtTWD = amountFrom;
+  } else {
+    const r = RATES[bank.name]?.[fromCur];
+    if (!r || r.buy === 0) return null; // 此銀行無此幣別
+    amtTWD = amountFrom * r.buy; // 你把外幣賣給銀行，拿到 TWD
+  }
+
+  // TWD → toCur
+  let got;
+  if (toCur === 'TWD') {
+    got = amtTWD - bank.fee; // 直接拿 TWD，扣手續費
+  } else {
+    const r = RATES[bank.name]?.[toCur];
+    if (!r || r.sell === 0) return null;
+    got = (amtTWD - bank.fee) / r.sell; // 用 TWD 買外幣
+  }
+  return got > 0 ? got : null;
+}
+
+function showResults() {
+  const amt   = parseFloat(document.getElementById('amtIn').value)||0;
+  const fromCur = fromC, toCur = toC;
+  const { isOpen } = getBankStatus();
+
+  // 計算各家
+  let results = BANKS.map(bank => {
+    const got = calcGot(bank, fromCur, toCur, amt);
+    if (got === null) return null;
+
+    // 匯率顯示字串
+    let rateStr;
+    if (fromCur !== 'TWD' && toCur === 'TWD') {
+      const r = RATES[bank.name]?.[fromCur];
+      rateStr = r ? `1 ${fromCur} = ${r.buy} TWD` : '—';
+    } else if (fromCur === 'TWD' && toCur !== 'TWD') {
+      const r = RATES[bank.name]?.[toCur];
+      rateStr = r ? `1 TWD = ${(1/r.sell).toFixed(4)} ${toCur}` : '—';
+    } else {
+      rateStr = '直接換算';
+    }
+
+    return {...bank, got, rateStr, bankOpen: isOpen};
+  }).filter(Boolean);
+
+  if (results.length === 0) {
+    showToast('⚠️ 找不到支援此幣別的銀行');
+    return;
+  }
+
+  // CP 值排序（只對營業中的排，已關閉的排後面）
+  const maxGot  = Math.max(...results.map(r=>r.got));
+  const minGot  = Math.min(...results.map(r=>r.got));
+  const maxDist = Math.max(...results.map(r=>r.dist));
+  results = results.map(r => {
+    const sGot  = maxGot===minGot?1:(r.got-minGot)/(maxGot-minGot);
+    const sFee  = r.fee===0?1:Math.max(0,1-r.fee/500);
+    const sDist = 1-(r.dist/maxDist);
+    const cp    = Math.round((sGot*0.5+sFee*0.3+sDist*0.2)*50)/10;
+    return {...r, cp};
+  });
+  results.sort((a,b)=>{
+    if(a.bankOpen!==b.bankOpen) return a.bankOpen?-1:1;
+    return b.cp-a.cp;
+  });
+
+  // 摘要
+  const fc = CURRENCIES.find(c=>c.code===fromCur);
+  const tc = CURRENCIES.find(c=>c.code===toCur);
+  document.getElementById('sumAmt').textContent = `${amt.toLocaleString()} ${fc.flag} ${fromCur} → ${tc.flag} ${toCur}`;
+  document.getElementById('sumInfo').textContent = `📍 目前位置・找到 ${results.length} 家`;
+
+  // 地圖標記
+  buildMapPins(results);
+
+  // 結果卡片
+  const list = document.getElementById('resultsList');
+  list.innerHTML = '';
+  const best = results.find(r=>r.bankOpen) || results[0];
+
+  results.forEach((r,idx)=>{
+    const rankClass = idx===0?'r1':idx===1?'r2':idx===2?'r3':idx===3?'r4':'r5';
+    const rankLabel = idx===0?'🏆 CP值最高':idx===1?'🥈 第 2 名':idx===2?'🥉 第 3 名':`#${idx+1}`;
+    const gotFmt    = r.got >= 100
+      ? r.got.toLocaleString('zh-TW',{maximumFractionDigits:0})
+      : r.got.toFixed(4);
+    const diffVal   = best.got - r.got;
+    const diffStr   = idx===0?'':`少換 ${diffVal>=100?Math.round(diffVal).toLocaleString():diffVal.toFixed(4)} ${toCur}`;
+    const statusTxt = r.bankOpen?'營業中':'今日已關閉';
+    const statusColor = r.bankOpen?'var(--green)':'var(--red)';
+
+    const div = document.createElement('div');
+    div.className = `rcard ${rankClass}`;
+    div.innerHTML = `
+      <div class="rank-tag">${rankLabel}</div>
+      <div class="rc-top">
+        <div class="bavatar">${r.icon}</div>
+        <div class="binfo">
+          <div class="bname">${r.name} ${r.branch}</div>
+          <div class="bstatus-row">
+            <div class="${r.bankOpen?'open-dot':'closed-dot'}"></div>
+            <span class="bstatus-txt" style="color:${statusColor}">${statusTxt}</span>
+            <span class="bdist">・步行 ${r.walkMin} 分（${r.dist}m）</span>
+          </div>
+        </div>
+        <div class="bright">
+          <div class="b-get">${gotFmt}</div>
+          <div class="b-unit">${toCur}</div>
+          ${diffStr?`<div class="b-diff less">↓ ${diffStr}</div>`:''}
+        </div>
+      </div>
+      <div class="rc-nums">
+        <div><div class="nl">匯率</div><div class="nv g" style="font-size:.75rem">${r.rateStr}</div></div>
+        <div><div class="nl">手續費</div><div class="nv ${r.fee===0?'g':'o'}">${r.fee===0?'免費':'$'+r.fee}</div></div>
+        <div><div class="nl">距離</div><div class="nv">${r.dist}m</div></div>
+      </div>
+      <div class="cp-row">
+        <span class="cp-lbl">CP 值</span>
+        <div class="cp-track"><div class="cp-bar" style="width:${(r.cp/5*100).toFixed(0)}%"></div></div>
+        <span class="cp-num">${r.cp}/5</span>
+      </div>
+      <div class="rc-btns">
+        <button class="btn-nav" onclick="navTo('${r.name} ${r.branch}')">🗺 立即導航</button>
+        <button class="btn-call" onclick="callBank('${r.phone}','${r.name}')">📞 ${r.phone}</button>
+      </div>
+      ${!r.bankOpen?'<div class="closed-overlay">今日已關閉，明日 09:00 開始</div>':''}
+    `;
+    list.appendChild(div);
+  });
+
+  // Tip
+  const tip = best;
+  const saving = best.got - results[results.length-1].got;
+  document.getElementById('tipText').textContent =
+    `💡 「${tip.name} ${tip.branch}」目前 CP 值最高，可換 ${
+      tip.got>=100?tip.got.toLocaleString('zh-TW',{maximumFractionDigits:0}):tip.got.toFixed(4)
+    } ${toCur}。${saving>0?`比最差選項多換 ${saving>=100?Math.round(saving).toLocaleString():saving.toFixed(4)} ${toCur}，`:''
+    }步行僅需 ${tip.walkMin} 分鐘，${tip.fee===0?'且完全免手續費！':'建議先確認現鈔是否充足。'}`;
+
+  // 更新時間
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset()*60000;
+  const tst = new Date(utc + 8*3600000);
+  const pad = n=>String(n).padStart(2,'0');
+  document.getElementById('mapUpdateTime').textContent =
+    `資料更新：${pad(tst.getHours())}:${pad(tst.getMinutes())}`;
+
+  setStep(3);
+  showPage('s2');
+}
+
+// ══════════════════════════════════════════
+//  地圖標記
+// ══════════════════════════════════════════
+function buildMapPins(results) {
+  // 設定距離圈大小（以地圖寬度比例換算）
+  const mapEl = document.getElementById('mapArea');
+  const w = mapEl.offsetWidth;
+  const maxDistPx = w * 0.4; // 地圖邊緣大約代表 2km
+  const pxPerM = maxDistPx / 2000;
+  const r1 = Math.round(1000 * pxPerM);
+  const r2 = Math.round(2000 * pxPerM);
+  document.getElementById('ring1km').style.cssText = `left:50%;top:50%;width:${r1*2}px;height:${r1*2}px;margin-left:-${r1}px;margin-top:-${r1}px`;
+  document.getElementById('ring2km').style.cssText = `left:50%;top:50%;width:${r2*2}px;height:${r2*2}px;margin-left:-${r2}px;margin-top:-${r2}px`;
+
+  const container = document.getElementById('mapPins');
+  container.innerHTML = '';
+  results.forEach((r, idx) => {
+    const pin = document.createElement('div');
+    pin.className = 'bank-pin';
+    pin.style.left = r.pos.x + '%';
+    pin.style.top  = r.pos.y + '%';
+    let cls = idx===0?'bp-rank1':idx<=2?'bp-rank2':'bp-rank3';
+    if (!r.bankOpen) cls = 'bp-closed';
+    pin.innerHTML = `<div class="bp-bubble ${cls}" title="${r.name} ${r.branch}">${r.icon} ${r.name}</div>`;
+    pin.onclick = () => showToast(`${r.name}・步行${r.walkMin}分・CP值${r.cp}`);
+    container.appendChild(pin);
+  });
+}
+
+// ══════════════════════════════════════════
+//  工具
+// ══════════════════════════════════════════
+function goBack() { setStep(1); showPage('s1'); }
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function setStep(n) {
+  for(let i=1;i<=3;i++){
+    document.getElementById('sc'+i).className='sc '+(i<n?'done':i===n?'active':'idle');
+    document.getElementById('sl'+i).className='sl '+(i<n?'done':i===n?'active':'');
+  }
+  for(let i=1;i<=2;i++) document.getElementById('sline'+i).className='sline'+(i<n?' done':'');
+}
+let tt;
+function showToast(m){
+  const t=document.getElementById('toast');
+  t.textContent=m;t.classList.add('show');
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600);
+}
+function navTo(name){
+  window.open(`https://www.google.com/maps/search/${encodeURIComponent(name+'台灣')}/@${userLat},${userLng},15z`,'_blank');
+}
+function callBank(phone, name){
+  showToast(`📞 ${name} ${phone}`);
+  window.location.href='tel:'+phone.replace(/-/g,'');
+}
+
+// chips & pickers outside
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#fromBadge')&&!e.target.closest('#fromPicker')){
+    document.getElementById('fromPicker').classList.remove('open');
+    document.getElementById('fromBadge').classList.remove('open');
+  }
+});
+
+init();
+</script>
+</body>
+</html>
