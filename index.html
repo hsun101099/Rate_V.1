@@ -199,6 +199,73 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--dark
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:#fff;padding:10px 18px;border-radius:var(--rs);font-size:.82rem;font-weight:500;z-index:999;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;box-shadow:var(--sm)}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
+/* ── CHAT FAB ── */
+.chat-fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#0094FF);color:#fff;border:none;cursor:pointer;font-size:1.5rem;display:grid;place-items:center;box-shadow:0 4px 20px rgba(26,92,255,.35);z-index:200;transition:.25s;font-family:inherit}
+.chat-fab:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(26,92,255,.45)}
+
+/* ── CHAT PANEL ── */
+.chat-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:250;opacity:0;pointer-events:none;transition:opacity .3s}
+.chat-overlay.show{opacity:1;pointer-events:auto}
+.chat-panel{position:fixed;bottom:0;right:0;width:100%;max-width:420px;height:85vh;max-height:700px;background:var(--bg);border-radius:var(--rl) var(--rl) 0 0;box-shadow:0 -4px 30px rgba(0,0,0,.15);z-index:300;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow:hidden}
+.chat-panel.open{transform:translateY(0)}
+.chat-header{background:linear-gradient(135deg,var(--blue),#0094FF);color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ch-title{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.ch-sub{font-size:.7rem;opacity:.75;margin-top:2px}
+.ch-close{background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:grid;place-items:center;transition:.15s}
+.ch-close:hover{background:rgba(255,255,255,.35)}
+
+/* ── CHAT MESSAGES ── */
+.chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.chat-msgs::-webkit-scrollbar{width:4px}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.chat-msg{max-width:85%;animation:msgIn .3s ease-out}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.msg-bot{align-self:flex-start}
+.msg-user{align-self:flex-end}
+.msg-bubble{padding:12px 16px;border-radius:var(--rm);font-size:.85rem;line-height:1.65;word-break:break-word}
+.msg-bot .msg-bubble{background:var(--white);border:1px solid var(--border);color:var(--dark);border-bottom-left-radius:4px}
+.msg-user .msg-bubble{background:var(--blue);color:#fff;border-bottom-right-radius:4px}
+.msg-time{font-size:.65rem;color:var(--light);margin-top:4px;padding:0 4px}
+.msg-bot .msg-time{text-align:left}
+.msg-user .msg-time{text-align:right}
+
+/* ── QUICK ACTIONS ── */
+.quick-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.qa-btn{padding:8px 14px;border-radius:20px;border:1.5px solid var(--blue);background:var(--blue-l);color:var(--blue);font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap}
+.qa-btn:hover{background:var(--blue);color:#fff}
+
+/* ── CHAT INPUT ── */
+.chat-input-area{padding:12px 16px;background:var(--white);border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.chat-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--rm);font-size:.85rem;font-family:inherit;outline:none;transition:.15s;background:var(--bg)}
+.chat-input:focus{border-color:var(--blue);background:var(--white)}
+.chat-input::placeholder{color:var(--light)}
+.chat-send{width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;border:none;cursor:pointer;font-size:1rem;display:grid;place-items:center;transition:.15s;flex-shrink:0}
+.chat-send:hover{background:var(--blue-d)}
+
+/* ── QUIZ OPTIONS ── */
+.quiz-opts{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.quiz-opt{padding:10px 14px;border-radius:var(--rm);border:1.5px solid var(--border);background:var(--white);font-size:.82rem;cursor:pointer;font-family:inherit;text-align:left;transition:.15s;display:flex;align-items:center;gap:8px}
+.quiz-opt:hover:not(.correct):not(.wrong){border-color:var(--blue);background:var(--blue-l)}
+.quiz-opt.correct{border-color:var(--green);background:var(--green-l);color:#065F46;cursor:default}
+.quiz-opt.wrong{border-color:var(--red);background:var(--red-l);color:#991B1B;cursor:default}
+.quiz-opt.disabled{pointer-events:none;opacity:.6}
+.opt-label{width:22px;height:22px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border);display:grid;place-items:center;font-size:.7rem;font-weight:700;flex-shrink:0}
+.quiz-opt.correct .opt-label{background:var(--green);color:#fff;border-color:var(--green)}
+.quiz-opt.wrong .opt-label{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* ── SCORE CARD ── */
+.score-card{background:linear-gradient(135deg,var(--green),#00E693);border-radius:var(--rm);padding:18px;color:#fff;text-align:center;margin-top:10px}
+.score-big{font-size:2.2rem;font-weight:900}
+.score-sub{font-size:.8rem;opacity:.85;margin-top:4px}
+
+/* ── QUESTION BANK CARD ── */
+.qb-card{background:var(--white);border:1px solid var(--border);border-radius:var(--rm);padding:12px 14px;margin-top:6px;font-size:.82rem}
+.qb-type{font-size:.68rem;font-weight:700;color:var(--blue);background:var(--blue-l);padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:6px}
+.qb-q{font-weight:600;margin-bottom:4px}
+.qb-a{font-size:.75rem;color:var(--mid)}
+.qb-del{float:right;background:none;border:none;color:var(--light);cursor:pointer;font-size:.8rem;padding:2px 6px}
+.qb-del:hover{color:var(--red)}
+
 /* ── RESPONSIVE ── */
 @media(max-width:599px){
   .s1-wrap,.s2-wrap{padding:16px 14px 36px}
@@ -207,6 +274,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--dark
   .rc-btns{grid-template-columns:1fr 1fr}
   .map-area{height:220px}
   .sl{display:none}
+  .chat-panel{max-width:100%;height:92vh}
+  .chat-fab{bottom:16px;right:16px;width:50px;height:50px;font-size:1.3rem}
 }
 @media(max-width:380px){
   .to-grid{grid-template-columns:repeat(2,1fr)}
@@ -343,6 +412,28 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--dark
     <div class="li" id="li2"><div class="li-dot"></div>搜尋附近換匯地點</div>
     <div class="li" id="li3"><div class="li-dot"></div>載入各銀行匯率</div>
     <div class="li" id="li4"><div class="li-dot"></div>計算 CP 值排序</div>
+  </div>
+</div>
+
+<!-- CHAT FAB -->
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="互動式測試題目製作">📝</button>
+
+<!-- CHAT OVERLAY -->
+<div class="chat-overlay" id="chatOverlay" onclick="closeChat()"></div>
+
+<!-- CHAT PANEL -->
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-header">
+    <div>
+      <div class="ch-title">📝 互動式測試題目製作</div>
+      <div class="ch-sub">換匯知識測驗聊天室</div>
+    </div>
+    <button class="ch-close" onclick="closeChat()">✕</button>
+  </div>
+  <div class="chat-msgs" id="chatMsgs"></div>
+  <div class="chat-input-area">
+    <input class="chat-input" id="chatInput" placeholder="輸入指令或回覆…" onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()">➤</button>
   </div>
 </div>
 
@@ -833,6 +924,442 @@ document.addEventListener('click',e=>{
     document.getElementById('fromBadge').classList.remove('open');
   }
 });
+
+// ══════════════════════════════════════════
+//  互動式測試題目製作 聊天室
+// ══════════════════════════════════════════
+let chatOpen = false;
+let chatState = 'idle';
+let questionBank = JSON.parse(localStorage.getItem('rateQuizBank') || '[]');
+let curQ = {};
+let quiz = { qs: [], idx: 0, score: 0 };
+
+function toggleChat() { chatOpen ? closeChat() : openChat(); }
+
+function openChat() {
+  chatOpen = true;
+  document.getElementById('chatPanel').classList.add('open');
+  document.getElementById('chatOverlay').classList.add('show');
+  document.getElementById('chatFab').style.display = 'none';
+  if (!document.getElementById('chatMsgs').children.length) showWelcome();
+  document.getElementById('chatInput').focus();
+}
+
+function closeChat() {
+  chatOpen = false;
+  document.getElementById('chatPanel').classList.remove('open');
+  document.getElementById('chatOverlay').classList.remove('show');
+  document.getElementById('chatFab').style.display = 'grid';
+}
+
+function chatNow() {
+  const n = new Date();
+  const t = new Date(n.getTime() + n.getTimezoneOffset() * 60000 + 8 * 3600000);
+  return String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0');
+}
+
+function escH(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function addBot(html, actions) {
+  const c = document.getElementById('chatMsgs');
+  const d = document.createElement('div');
+  d.className = 'chat-msg msg-bot';
+  let ah = '';
+  if (actions && actions.length) {
+    ah = '<div class="quick-actions">' +
+      actions.map(a => `<button class="qa-btn" onclick="doAction('${a.c}')">${a.l}</button>`).join('') +
+      '</div>';
+  }
+  d.innerHTML = `<div class="msg-bubble">${html}${ah}</div><div class="msg-time">${chatNow()}</div>`;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+}
+
+function addUser(text) {
+  const c = document.getElementById('chatMsgs');
+  const d = document.createElement('div');
+  d.className = 'chat-msg msg-user';
+  d.innerHTML = `<div class="msg-bubble">${escH(text)}</div><div class="msg-time">${chatNow()}</div>`;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+}
+
+function saveBank() { localStorage.setItem('rateQuizBank', JSON.stringify(questionBank)); }
+
+function showWelcome() {
+  addBot(
+    '👋 歡迎來到<strong>互動式測試題目製作</strong>聊天室！<br><br>' +
+    '我可以幫你建立換匯相關的測驗題目：<br><br>' +
+    '📝 <strong>出題</strong> — 手動建立題目<br>' +
+    '🤖 <strong>自動出題</strong> — 從匯率資料自動產生<br>' +
+    '📋 <strong>題庫</strong> — 查看已建立的題目<br>' +
+    '🎯 <strong>測驗</strong> — 開始作答<br>' +
+    '❓ <strong>幫助</strong> — 查看所有指令',
+    [
+      {l:'📝 出題', c:'create'},
+      {l:'🤖 自動出題', c:'auto'},
+      {l:'📋 題庫', c:'list'},
+      {l:'🎯 測驗', c:'quiz'},
+    ]
+  );
+}
+
+function showHelp() {
+  addBot(
+    '📖 <strong>指令列表</strong><br><br>' +
+    '📝 <strong>出題</strong> — 逐步建立新題目（選擇題 / 是非題 / 填空題）<br>' +
+    '🤖 <strong>自動出題</strong> — 根據匯率與銀行資料自動產生 5 題<br>' +
+    '📋 <strong>題庫</strong> — 查看與管理所有題目<br>' +
+    '🎯 <strong>測驗</strong> — 隨機抽題開始作答<br>' +
+    '🗑️ <strong>清除題庫</strong> — 刪除所有題目<br>' +
+    '❓ <strong>幫助</strong> — 顯示此說明<br><br>' +
+    '<em>也可以直接點選下方按鈕操作 👇</em>',
+    [
+      {l:'📝 出題', c:'create'},
+      {l:'🤖 自動出題', c:'auto'},
+      {l:'📋 題庫', c:'list'},
+      {l:'🎯 測驗', c:'quiz'},
+    ]
+  );
+}
+
+function sendChat() {
+  const inp = document.getElementById('chatInput');
+  const t = inp.value.trim();
+  if (!t) return;
+  inp.value = '';
+  addUser(t);
+  setTimeout(() => route(t), 300);
+}
+
+function route(text) {
+  if (chatState !== 'idle') { handleCreate(text); return; }
+  const t = text.toLowerCase();
+  if (t==='出題'||t==='create'||t==='/create'||t.includes('建立題目')||t.includes('新增題目')) startCreate();
+  else if (t==='自動出題'||t==='auto'||t==='/auto'||t.includes('自動產生')) autoGen();
+  else if (t==='題庫'||t==='list'||t==='/list'||t.includes('查看題目')||t.includes('所有題目')) showBank();
+  else if (t==='測驗'||t==='quiz'||t==='/quiz'||t.includes('開始測驗')||t.includes('開始作答')) startQuiz();
+  else if (t==='幫助'||t==='help'||t==='/help') showHelp();
+  else if (t==='清除題庫'||t==='clear'||t==='/clear') clearBank();
+  else addBot('🤔 不太理解這個指令，請試試以下功能：', [
+    {l:'📝 出題', c:'create'}, {l:'🤖 自動出題', c:'auto'},
+    {l:'📋 題庫', c:'list'}, {l:'🎯 測驗', c:'quiz'}, {l:'❓ 幫助', c:'help'}
+  ]);
+}
+
+function doAction(cmd) {
+  switch(cmd) {
+    case 'create': addUser('出題'); setTimeout(startCreate, 300); break;
+    case 'auto':   addUser('自動出題'); setTimeout(autoGen, 300); break;
+    case 'list':   addUser('題庫'); setTimeout(showBank, 300); break;
+    case 'quiz':   addUser('測驗'); setTimeout(startQuiz, 300); break;
+    case 'help':   addUser('幫助'); setTimeout(showHelp, 300); break;
+    case 'menu':   chatState='idle'; showWelcome(); break;
+    case 'clear_confirm': addUser('清除題庫'); setTimeout(clearBank, 300); break;
+    case 'type_mc':   handleCreate('1'); break;
+    case 'type_tf':   handleCreate('2'); break;
+    case 'type_fb':   handleCreate('3'); break;
+    case 'ans_a':     handleCreate('A'); break;
+    case 'ans_b':     handleCreate('B'); break;
+    case 'ans_c':     handleCreate('C'); break;
+    case 'ans_d':     handleCreate('D'); break;
+    case 'tf_yes':    handleCreate('是'); break;
+    case 'tf_no':     handleCreate('非'); break;
+  }
+}
+
+// ── 手動出題流程 ──
+function startCreate() {
+  chatState = 'pick_type';
+  curQ = {};
+  addBot(
+    '📝 <strong>開始出題！</strong><br><br>請選擇題目類型：<br>' +
+    '1️⃣ 選擇題（四選一）<br>' +
+    '2️⃣ 是非題<br>' +
+    '3️⃣ 填空題',
+    [{l:'1️⃣ 選擇題', c:'type_mc'}, {l:'2️⃣ 是非題', c:'type_tf'}, {l:'3️⃣ 填空題', c:'type_fb'}]
+  );
+}
+
+function handleCreate(text) {
+  const t = text.trim();
+  switch(chatState) {
+    case 'pick_type':
+      if (t==='1'||t.includes('選擇')) { curQ.type='mc'; curQ.typeName='選擇題'; }
+      else if (t==='2'||t.includes('是非')) { curQ.type='tf'; curQ.typeName='是非題'; }
+      else if (t==='3'||t.includes('填空')) { curQ.type='fb'; curQ.typeName='填空題'; }
+      else { addBot('請輸入 1、2 或 3 來選擇題目類型 😊'); return; }
+      chatState = 'input_q';
+      addBot(`✅ 已選擇：<strong>${curQ.typeName}</strong><br><br>請輸入題目內容：<br><em>例如：哪家銀行的美元買入匯率最高？</em>`);
+      break;
+
+    case 'input_q':
+      curQ.question = t;
+      if (curQ.type === 'mc') { chatState = 'mc_a'; addBot('請輸入<strong>選項 A</strong> 的內容：'); }
+      else if (curQ.type === 'tf') {
+        chatState = 'tf_ans';
+        addBot('這題的正確答案是？', [{l:'⭕ 是（正確）', c:'tf_yes'}, {l:'❌ 非（錯誤）', c:'tf_no'}]);
+      } else { chatState = 'fb_ans'; addBot('請輸入<strong>正確答案</strong>：<br><em>例如：台灣銀行</em>'); }
+      break;
+
+    case 'mc_a': curQ.options = [t]; chatState = 'mc_b'; addBot('請輸入<strong>選項 B</strong> 的內容：'); break;
+    case 'mc_b': curQ.options.push(t); chatState = 'mc_c'; addBot('請輸入<strong>選項 C</strong> 的內容：'); break;
+    case 'mc_c': curQ.options.push(t); chatState = 'mc_d'; addBot('請輸入<strong>選項 D</strong> 的內容：'); break;
+    case 'mc_d':
+      curQ.options.push(t);
+      chatState = 'mc_ans';
+      addBot(
+        '哪個是正確答案？<br>A. '+escH(curQ.options[0])+'<br>B. '+escH(curQ.options[1])+'<br>C. '+escH(curQ.options[2])+'<br>D. '+escH(curQ.options[3]),
+        [{l:'A', c:'ans_a'}, {l:'B', c:'ans_b'}, {l:'C', c:'ans_c'}, {l:'D', c:'ans_d'}]
+      );
+      break;
+
+    case 'mc_ans': {
+      const m = {a:0,b:1,c:2,d:3,A:0,B:1,C:2,D:3};
+      if (m[t] === undefined) { addBot('請輸入 A、B、C 或 D 😊'); return; }
+      curQ.answer = m[t];
+      finishCreate();
+      break;
+    }
+
+    case 'tf_ans':
+      if (t==='是'||t.includes('正確')||t==='O'||t==='o'||t==='true') {
+        curQ.answer = true;
+      } else if (t==='非'||t.includes('錯誤')||t==='X'||t==='x'||t==='false') {
+        curQ.answer = false;
+      } else { addBot('請回答「是」或「非」😊'); return; }
+      curQ.options = ['正確（是）','錯誤（非）'];
+      finishCreate();
+      break;
+
+    case 'fb_ans':
+      curQ.answer = t;
+      finishCreate();
+      break;
+  }
+}
+
+function finishCreate() {
+  curQ.id = Date.now();
+  questionBank.push(curQ);
+  saveBank();
+  chatState = 'idle';
+
+  let ansStr = '';
+  if (curQ.type==='mc') ansStr = ['A','B','C','D'][curQ.answer] + '. ' + escH(curQ.options[curQ.answer]);
+  else if (curQ.type==='tf') ansStr = curQ.answer ? '⭕ 正確' : '❌ 錯誤';
+  else ansStr = escH(curQ.answer);
+
+  addBot(
+    '🎉 <strong>題目建立成功！</strong><br><br>' +
+    `<div class="qb-card"><span class="qb-type">${curQ.typeName}</span>` +
+    `<div class="qb-q">${escH(curQ.question)}</div>` +
+    `<div class="qb-a">✅ 正確答案：${ansStr}</div></div><br>` +
+    `題庫目前共有 <strong>${questionBank.length}</strong> 題`,
+    [{l:'📝 繼續出題', c:'create'}, {l:'🤖 自動出題', c:'auto'}, {l:'🎯 開始測驗', c:'quiz'}, {l:'🏠 主選單', c:'menu'}]
+  );
+}
+
+// ── 自動出題 ──
+function autoGen() {
+  const generated = [];
+  const bankNames = Object.keys(RATES);
+  const curCodes = Object.keys(RATES[bankNames[0]]);
+
+  // 1) 哪家銀行的 X 買入匯率最高
+  const c1 = curCodes[Math.floor(Math.random()*curCodes.length)];
+  const cn1 = CURRENCIES.find(x=>x.code===c1);
+  let best1 = '', bestVal1 = 0;
+  bankNames.forEach(b => { const r = RATES[b][c1]; if(r&&r.buy>bestVal1){bestVal1=r.buy;best1=b;} });
+  const wrongs1 = bankNames.filter(b=>b!==best1).sort(()=>Math.random()-.5).slice(0,3);
+  const opts1 = [best1,...wrongs1].sort(()=>Math.random()-.5);
+  generated.push({ id:Date.now(), type:'mc', typeName:'選擇題',
+    question:`哪家銀行的${cn1?cn1.name:c1}（${c1}）現鈔買入匯率最高？`,
+    options:opts1, answer:opts1.indexOf(best1) });
+
+  // 2) X 銀行的 Y 賣出匯率是多少（填空）
+  const b2 = bankNames[Math.floor(Math.random()*bankNames.length)];
+  const c2 = curCodes.filter(cc=>RATES[b2][cc]&&RATES[b2][cc].sell>0);
+  if (c2.length) {
+    const cc2 = c2[Math.floor(Math.random()*c2.length)];
+    const cn2 = CURRENCIES.find(x=>x.code===cc2);
+    generated.push({ id:Date.now()+1, type:'fb', typeName:'填空題',
+      question:`${b2}的${cn2?cn2.name:cc2}（${cc2}）現鈔賣出匯率是多少？`,
+      answer: String(RATES[b2][cc2].sell) });
+  }
+
+  // 3) 是非題：距離比較
+  const bi = Math.floor(Math.random()*(BANKS.length-1));
+  const ba = BANKS[bi], bb = BANKS[bi+1];
+  const closer = ba.dist < bb.dist;
+  generated.push({ id:Date.now()+2, type:'tf', typeName:'是非題',
+    question:`${ba.name}（${ba.dist}m）比${bb.name}（${bb.dist}m）距離更近`,
+    options:['正確（是）','錯誤（非）'], answer:closer });
+
+  // 4) 哪家銀行手續費為 0（選擇題）
+  const freeBanks = BANKS.filter(b=>b.fee===0);
+  const feeBanks = BANKS.filter(b=>b.fee>0);
+  if (freeBanks.length && feeBanks.length) {
+    const correct = freeBanks[Math.floor(Math.random()*freeBanks.length)].name;
+    const wrong = feeBanks.map(b=>b.name).slice(0,2);
+    const extra = freeBanks.filter(b=>b.name!==correct).slice(0,1).map(b=>b.name+'（也免手續費）');
+    const allOpts = [correct, ...wrong];
+    while(allOpts.length<4) allOpts.push(bankNames.filter(b=>!allOpts.includes(b))[0]||'無');
+    const shuffled = allOpts.sort(()=>Math.random()-.5);
+    generated.push({ id:Date.now()+3, type:'mc', typeName:'選擇題',
+      question:'以下哪家銀行換匯免手續費？',
+      options:shuffled, answer:shuffled.indexOf(correct) });
+  }
+
+  // 5) 步行時間（填空）
+  const bk5 = BANKS[Math.floor(Math.random()*BANKS.length)];
+  generated.push({ id:Date.now()+4, type:'fb', typeName:'填空題',
+    question:`步行到${bk5.name}${bk5.branch}大約需要幾分鐘？`,
+    answer: String(bk5.walkMin) });
+
+  questionBank.push(...generated);
+  saveBank();
+
+  let preview = generated.map((q,i) =>
+    `<div class="qb-card"><span class="qb-type">${q.typeName}</span><div class="qb-q">${escH(q.question)}</div></div>`
+  ).join('');
+
+  addBot(
+    `🤖 已自動產生 <strong>${generated.length}</strong> 題！<br>${preview}<br>題庫目前共有 <strong>${questionBank.length}</strong> 題`,
+    [{l:'🤖 再產生更多', c:'auto'}, {l:'🎯 開始測驗', c:'quiz'}, {l:'📋 查看題庫', c:'list'}, {l:'🏠 主選單', c:'menu'}]
+  );
+}
+
+// ── 題庫 ──
+function showBank() {
+  if (!questionBank.length) {
+    addBot('📋 題庫目前是空的，先來出題吧！', [{l:'📝 出題', c:'create'}, {l:'🤖 自動出題', c:'auto'}]);
+    return;
+  }
+  let cards = questionBank.map((q,i) => {
+    let ansStr = '';
+    if (q.type==='mc') ansStr = ['A','B','C','D'][q.answer] + '. ' + escH(q.options[q.answer]);
+    else if (q.type==='tf') ansStr = q.answer ? '⭕ 正確' : '❌ 錯誤';
+    else ansStr = escH(q.answer);
+    return `<div class="qb-card">
+      <button class="qb-del" onclick="delQ(${i})" title="刪除">✕</button>
+      <span class="qb-type">${q.typeName}</span>
+      <div class="qb-q">${escH(q.question)}</div>
+      <div class="qb-a">✅ ${ansStr}</div>
+    </div>`;
+  }).join('');
+  addBot(`📋 <strong>題庫</strong>（共 ${questionBank.length} 題）${cards}`,
+    [{l:'🎯 開始測驗', c:'quiz'}, {l:'📝 出題', c:'create'}, {l:'🗑️ 清除全部', c:'clear_confirm'}]);
+}
+
+function delQ(idx) {
+  if (idx >= 0 && idx < questionBank.length) {
+    const name = questionBank[idx].question.substring(0,15) + '...';
+    questionBank.splice(idx, 1);
+    saveBank();
+    addBot(`🗑️ 已刪除題目：「${escH(name)}」<br>剩餘 ${questionBank.length} 題`);
+  }
+}
+
+function clearBank() {
+  questionBank = [];
+  saveBank();
+  addBot('🗑️ 題庫已全部清除！', [{l:'📝 出題', c:'create'}, {l:'🤖 自動出題', c:'auto'}, {l:'🏠 主選單', c:'menu'}]);
+}
+
+// ── 測驗 ──
+function startQuiz() {
+  if (questionBank.length < 2) {
+    addBot(`📢 題庫至少需要 <strong>2 題</strong>才能開始測驗（目前 ${questionBank.length} 題）`, [{l:'📝 出題', c:'create'}, {l:'🤖 自動出題', c:'auto'}]);
+    return;
+  }
+  const count = Math.min(questionBank.length, 10);
+  quiz = { qs: [...questionBank].sort(()=>Math.random()-.5).slice(0,count), idx:0, score:0 };
+  chatState = 'quiz';
+  addBot(`🎯 <strong>測驗開始！</strong><br>共 ${quiz.qs.length} 題，加油！`);
+  setTimeout(showQuizQ, 500);
+}
+
+function showQuizQ() {
+  const q = quiz.qs[quiz.idx];
+  const c = document.getElementById('chatMsgs');
+  const d = document.createElement('div');
+  d.className = 'chat-msg msg-bot';
+  const labels = ['A','B','C','D'];
+
+  let optsHtml = '';
+  if (q.type === 'mc') {
+    optsHtml = '<div class="quiz-opts">' + q.options.map((o,i) =>
+      `<button class="quiz-opt" onclick="ansQuiz(this,${i},${q.answer},'mc')"><span class="opt-label">${labels[i]}</span>${escH(o)}</button>`
+    ).join('') + '</div>';
+  } else if (q.type === 'tf') {
+    optsHtml = '<div class="quiz-opts">' +
+      `<button class="quiz-opt" onclick="ansQuiz(this,0,${q.answer?0:1},'tf')"><span class="opt-label">⭕</span>正確（是）</button>` +
+      `<button class="quiz-opt" onclick="ansQuiz(this,1,${q.answer?0:1},'tf')"><span class="opt-label">❌</span>錯誤（非）</button>` +
+      '</div>';
+  } else {
+    optsHtml = `<div style="margin-top:8px"><input class="chat-input" style="width:100%" placeholder="輸入你的答案…" onkeydown="if(event.key==='Enter')ansFB(this,'${escH(q.answer).replace(/'/g,"\\'")}')"><button class="qa-btn" style="margin-top:6px" onclick="ansFB(this.previousElementSibling,'${escH(q.answer).replace(/'/g,"\\'")}')">確認</button></div>`;
+  }
+
+  d.innerHTML = `<div class="msg-bubble"><strong>第 ${quiz.idx+1}/${quiz.qs.length} 題</strong>　<span class="qb-type">${q.typeName}</span><br><br>${escH(q.question)}${optsHtml}</div><div class="msg-time">${chatNow()}</div>`;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+}
+
+function ansQuiz(el, picked, correct, type) {
+  const parent = el.closest('.quiz-opts');
+  const btns = parent.querySelectorAll('.quiz-opt');
+  btns.forEach((b,i) => {
+    b.style.pointerEvents = 'none';
+    if (i === correct) b.classList.add('correct');
+    else if (i === picked && picked !== correct) b.classList.add('wrong');
+    else b.classList.add('disabled');
+  });
+  if (picked === correct) quiz.score++;
+  setTimeout(nextQ, 1200);
+}
+
+function ansFB(inputEl, correctAns) {
+  const val = inputEl.value.trim();
+  if (!val) return;
+  inputEl.disabled = true;
+  const isCorrect = val === correctAns;
+  if (isCorrect) { quiz.score++; inputEl.style.borderColor = 'var(--green)'; inputEl.style.background = 'var(--green-l)'; }
+  else { inputEl.style.borderColor = 'var(--red)'; inputEl.style.background = 'var(--red-l)'; }
+  addBot(isCorrect ? '✅ 答對了！' : `❌ 答錯了！正確答案是：<strong>${escH(correctAns)}</strong>`);
+  setTimeout(nextQ, 1200);
+}
+
+function nextQ() {
+  quiz.idx++;
+  if (quiz.idx < quiz.qs.length) showQuizQ();
+  else finishQuiz();
+}
+
+function finishQuiz() {
+  chatState = 'idle';
+  const pct = Math.round(quiz.score / quiz.qs.length * 100);
+  const emoji = pct>=80?'🎉':pct>=60?'👍':'💪';
+  const msg = pct>=80?'太厲害了！你對換匯知識非常熟悉！':pct>=60?'不錯喔！再多練習會更好！':'繼續加油！多了解換匯知識對你有幫助！';
+
+  const c = document.getElementById('chatMsgs');
+  const d = document.createElement('div');
+  d.className = 'chat-msg msg-bot';
+  d.innerHTML = `<div class="msg-bubble">
+    <div class="score-card">
+      <div class="score-big">${quiz.score} / ${quiz.qs.length}</div>
+      <div class="score-sub">${emoji} 正確率 ${pct}%</div>
+    </div>
+    <div style="margin-top:10px">${msg}</div>
+    <div class="quick-actions">
+      <button class="qa-btn" onclick="doAction('quiz')">🔄 再測一次</button>
+      <button class="qa-btn" onclick="doAction('auto')">🤖 自動出題</button>
+      <button class="qa-btn" onclick="doAction('menu')">🏠 主選單</button>
+    </div>
+  </div><div class="msg-time">${chatNow()}</div>`;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+}
 
 init();
 </script>
